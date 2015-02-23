@@ -7,30 +7,16 @@ import(
 
 filters := [...]string[".","..","bin"]
 
-func Filter(discovered <-chan *File, filtered chan<- *File, userfilters []string) {
-	filters = append(filters, userfilters);
+func InitFilter(userfilters []string) {
+	filters = append(filters, userfilters)
+}
 
-	for found := range discovered {
-		ignored := false
-		stats, err := found.Stat()
-		if err != nil {
-			return err
+func ShouldCopy(file FileData) {
+	filename := file.Info.Name()
+
+	for filter := range filters {
+		if filter == filename {
+			return false
 		}
-
-		filename := stats.Name()
-
-		//see if it is ignored
-		for filter := range filters {
-			if filter == filename {
-				ignored = true
-			}
-		}
-
-		if !ignored {
-			filtered <- found
-		} else {
-			found.Close()
-		}
-
 	}
 }

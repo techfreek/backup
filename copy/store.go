@@ -14,7 +14,7 @@ import(
 const layout = "Feb_22_2015_1652"
 const perm os.FileMode = 0755
 
-func Save(filtered <-chan *File, dest *string) {
+func Save(found <-chan FileData, dest *string) {
 	//create new dir at dest at current timestamp to store backup
 	now := time.Now()
 	nowStr := now.Format(layout)
@@ -25,7 +25,7 @@ func Save(filtered <-chan *File, dest *string) {
 		log.fatal("Could not create directory")
 	}
 
-	for toSave := range filtered {
+	for toSave := range found {
 		
 
 

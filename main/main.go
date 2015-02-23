@@ -21,12 +21,11 @@ func main() {
 	ignore := strings.Split(&ignorePtr, ",")
 
 	// set up the channels
-	discovered := make(chan *File, 1000)
-	filtered := make(chan *File, 100)
+	discovered := make(chan FileData, 1000)
 
+	copy.InitFilter(ignore)
 	copy.Discover(dirs, discovered)
-	copy.Filter(discovered, filtered, ignore)
-	copy.Save(filtered, destPtr)
+	copy.Save(discovered, destPtr)
 
 
 

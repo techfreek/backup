@@ -1,9 +1,14 @@
 package copy
 
+type FileData struct (
+	FileStruct *File
+	Info FileInfo
+)
+
 //so all functions in the file can push onto it
 var discovered chan *File
 
-func Discover(dirs []string, discochan chan<- *File) err {
+func Discover(dirs []string, discochan chan<- FileData) err {
 	discovered = discochan
 
 	for dir := range dirs {
@@ -25,6 +30,9 @@ func discoverDir(dir *File, dirname string) err {
 	}
 
 	for file := range contents {
+		//initialize struct with all the data
+		data := FileData{}
+
 		openedFile, err := os.Open(dirname + file.Name())
 		if err != nil {
 			return err
@@ -35,17 +43,21 @@ func discoverDir(dir *File, dirname string) err {
 		if err != nil {
 			return err
 		}
+		
+		data.FileStruct = openedFile;
+		data.Info = openedFile
 
-		if fileInfo.IsDir() {
-			//Make sure we save it on the other side
-			discovered <- openedFile
+		if ShouldCopy(data) {
+			if data.Info.IsDir() {
+				//Make sure we save it on the other side
+				discovered <- data
 
-			//Recursively call discover dir
-			discoverDir(openedFile, dirname + file.Name())
-		} else if fileInfo.Mode().IsRegular() {
-			//add to discovered list
-			discovered <- openedFile
+				//Recursively call discover dir
+				discoverDir(openedFile, dirname + data.Info.Name())
+			} else if data.Info.Mode().IsRegular() {
+				//add to discovered list
+				discovered <- openedFile
+			}
 		}
 	}
-
 }
